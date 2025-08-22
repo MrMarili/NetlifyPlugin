@@ -17,10 +17,6 @@
     mode = "eas"
 
 # Environment variables (set these in your Netlify dashboard)
-[build.environment]
-  # Required: Your Expo access token
-  # Get this from: https://expo.dev/accounts/[username]/settings/access-tokens
-  EXPO_TOKEN = "your-expo-token-here"
   
   # Optional: Branch name for EAS updates (defaults to "preview")
   EAS_UPDATE_BRANCH = "preview"
