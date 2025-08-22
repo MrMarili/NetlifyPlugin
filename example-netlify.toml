@@ -1,0 +1,58 @@
+# Example netlify.toml configuration for netlify-plugin-expo-qr
+# Copy this file to your project root and rename it to netlify.toml
+
+[build]
+  # Your build command (adjust as needed for your project)
+  command = "npm run build"
+  
+  # Your publish directory (adjust as needed for your project)
+  publish = "dist"
+
+# Plugin configuration
+[[plugins]]
+  package = "netlify-plugin-expo-qr"
+  
+  [plugins.inputs]
+    # Update mode: "eas" (recommended) or "publish" (legacy)
+    mode = "eas"
+
+# Environment variables (set these in your Netlify dashboard)
+[build.environment]
+  # Required: Your Expo access token
+  # Get this from: https://expo.dev/accounts/[username]/settings/access-tokens
+  EXPO_TOKEN = "your-expo-token-here"
+  
+  # Optional: Branch name for EAS updates (defaults to "preview")
+  EAS_UPDATE_BRANCH = "preview"
+
+# Alternative configuration examples:
+
+# Example 1: Legacy publish mode
+# [[plugins]]
+#   package = "netlify-plugin-expo-qr"
+#   [plugins.inputs]
+#     mode = "publish"
+# [build.environment]
+#   EXPO_TOKEN = "your-expo-token-here"
+
+# Example 2: Custom branch for EAS updates
+# [[plugins]]
+#   package = "netlify-plugin-expo-qr"
+#   [plugins.inputs]
+#     mode = "eas"
+# [build.environment]
+#   EXPO_TOKEN = "your-expo-token-here"
+#   EAS_UPDATE_BRANCH = "production"
+
+# Example 3: Multiple environments
+# [context.production]
+#   [context.production.environment]
+#     EAS_UPDATE_BRANCH = "production"
+# 
+# [context.deploy-preview]
+#   [context.deploy-preview.environment]
+#     EAS_UPDATE_BRANCH = "preview"
+# 
+# [context.branch-deploy]
+#   [context.branch-deploy.environment]
+#     EAS_UPDATE_BRANCH = "development"

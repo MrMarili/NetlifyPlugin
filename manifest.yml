@@ -1,0 +1,6 @@
+name: netlify-plugin-expo-qr
+inputs:
+  - name: mode
+    description: "Expo update mode - 'eas' (default) or 'publish' (legacy)"
+    default: "eas"
+    required: false
