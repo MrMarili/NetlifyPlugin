@@ -99,6 +99,42 @@ EXPO_TOKEN = "your-expo-token-here"
 EAS_UPDATE_BRANCH = "production"
 ```
 
+## 🤖 Automation Scripts
+
+This project includes powerful automation scripts to streamline development workflow:
+
+### Available Scripts
+
+- **`scripts/update-both-projects.sh`** - Main script to update both NetlifyPlugin and pluginTest projects
+- **`scripts/quick-update.sh`** - Quick update with automatic GitHub push
+- **`scripts/setup-aliases.sh`** - Set up convenient shell aliases
+
+### Quick Start
+
+```bash
+# Set up aliases (run once)
+./scripts/setup-aliases.sh
+
+# Quick update with push
+quick-update "Add new feature" "1.0.12"
+
+# Manual update without push
+update-projects "Fix bug" "1.0.11"
+
+# Update scripts only
+update-scripts
+```
+
+### What the Scripts Do
+
+1. **Automatically navigate** between both project directories
+2. **Install plugin updates** in pluginTest
+3. **Commit changes** with your custom message
+4. **Push to GitHub** (optional)
+5. **Handle all git operations** seamlessly
+
+For detailed usage, see [scripts/README.md](scripts/README.md).
+
 ## Prerequisites
 
 ### 1. Expo CLI and EAS CLI
