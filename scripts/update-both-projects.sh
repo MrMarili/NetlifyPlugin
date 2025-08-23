@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script to automatically update both NetlifyPlugin and pluginTest projects
-# Usage: ./update-both-projects.sh "commit message" "plugin version" [--push]
+# Usage: ./update-both-projects.sh "commit message" "plugin version" [--push] [--with-ngrok] [--ngrok-version <ver>]
 
 set -e  # Exit on any error
 
@@ -36,7 +36,9 @@ if [ $# -lt 2 ]; then
     echo "Parameters:"
     echo "  commit message  - Git commit message for both projects"
     echo "  plugin version  - Version to install in pluginTest (e.g., 1.0.11)"
-    echo "  --push         - Optional: push to GitHub after commit"
+    echo "  --push           - Optional: push to GitHub after commit"
+    echo "  --with-ngrok     - Optional: install @expo/ngrok in pluginTest"
+    echo "  --ngrok-version  - Optional: set ngrok package version (default ^4.1.0)"
     echo ""
     echo "Example:"
     echo "  $0 \"Add new feature\" \"1.0.12\" --push"
@@ -47,11 +49,32 @@ fi
 COMMIT_MESSAGE="$1"
 PLUGIN_VERSION="$2"
 PUSH_TO_GITHUB=false
+INSTALL_NGROK=false
+NGROK_VERSION="^4.1.0"
 
 # Check if --push flag is provided
-if [ "$3" = "--push" ]; then
-    PUSH_TO_GITHUB=true
-fi
+# Parse optional flags (from 3rd arg onwards)
+shift 2
+while (("$#")); do
+  case "$1" in
+    --push)
+      PUSH_TO_GITHUB=true
+      shift 1
+      ;;
+    --with-ngrok)
+      INSTALL_NGROK=true
+      shift 1
+      ;;
+    --ngrok-version)
+      NGROK_VERSION="$2"
+      shift 2
+      ;;
+    *)
+      # ignore unknown flags for forward-compat
+      shift 1
+      ;;
+  esac
+done
 
 # Get the directory where this script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -62,6 +85,7 @@ print_status "Starting automatic update of both projects..."
 print_status "Commit message: $COMMIT_MESSAGE"
 print_status "Plugin version: $PLUGIN_VERSION"
 print_status "Push to GitHub: $PUSH_TO_GITHUB"
+print_status "Install @expo/ngrok: $INSTALL_NGROK (version: $NGROK_VERSION)"
 echo ""
 
 # Check if directories exist
@@ -122,6 +146,12 @@ update_plugin_test() {
     # Update the plugin to the specified version
     print_status "Installing plugin version $PLUGIN_VERSION..."
     npm install "netlify-plugin-expo-qr@$PLUGIN_VERSION"
+    
+    # Optionally install @expo/ngrok in the app to ensure tunnel provider is present
+    if [ "$INSTALL_NGROK" = true ]; then
+        print_status "Installing @expo/ngrok@$NGROK_VERSION in pluginTest..."
+        npm install "@expo/ngrok@$NGROK_VERSION"
+    fi
     
     # Check git status
     if [ -n "$(git status --porcelain)" ]; then

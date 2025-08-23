@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Quick update script that automatically pushes to GitHub
-# Usage: ./quick-update.sh "commit message" "plugin version"
+# Usage: ./quick-update.sh "commit message" "plugin version" [--with-ngrok] [--ngrok-version <ver>]
 
 set -e  # Exit on any error
 
@@ -23,6 +23,7 @@ if [ $# -lt 2 ]; then
     echo "Usage: $0 \"commit message\" \"plugin version\""
     echo ""
     echo "This script will update both projects and push to GitHub automatically."
+    echo "Optional flags: --with-ngrok --ngrok-version <ver>"
     echo ""
     echo "Example:"
     echo "  $0 \"Add new feature\" \"1.0.12\""
@@ -31,12 +32,14 @@ fi
 
 COMMIT_MESSAGE="$1"
 PLUGIN_VERSION="$2"
+shift 2
+EXTRA_FLAGS=("$@")
 
 print_status "Quick update with automatic push to GitHub..."
 echo ""
 
-# Call the main script with --push flag
-./scripts/update-both-projects.sh "$COMMIT_MESSAGE" "$PLUGIN_VERSION" --push
+# Call the main script with --push flag and pass-through extra flags
+./scripts/update-both-projects.sh "$COMMIT_MESSAGE" "$PLUGIN_VERSION" --push "${EXTRA_FLAGS[@]}"
 
 print_success "Quick update completed! Both projects updated and pushed to GitHub."
 print_status "Netlify should automatically detect the changes and start building."
