@@ -21,7 +21,7 @@ module.exports = {
       let branchName = 'unknown';
       
       if (mode === 'eas') {
-        console.log('📱 Running EAS update...');
+        console.log('📱 Starting Expo with tunnel...');
         
         // Set EXPO_TOKEN for EAS authentication
         console.log('🔐 Setting EXPO_TOKEN for EAS authentication...');
@@ -31,30 +31,7 @@ module.exports = {
         const branch = process.env.EAS_UPDATE_BRANCH || 'preview';
         branchName = branch;
         
-        const commitMessage = `Netlify ${process.env.COMMIT_REF || 'build'}`;
-        
-        const easCommand = `eas update --branch ${branch} --message "${commitMessage}" --non-interactive --json`;
-        console.log(`🔧 Executing: ${easCommand}`);
-        
-        const easOutput = execSync(easCommand, { 
-          encoding: 'utf8',
-          stdio: 'pipe',
-          env: { ...process.env, EXPO_TOKEN: process.env.EXPO_TOKEN }
-        });
-        
-        const easResult = JSON.parse(easOutput);
-        console.log('✅ EAS update completed successfully');
-        
-        // Extract URL from EAS update result
-        if (easResult.url) {
-          expoUrl = easResult.url;
-        } else if (easResult.links && easResult.links.url) {
-          expoUrl = easResult.links.url;
-        } else {
-          throw new Error('Could not extract Expo URL from EAS update result');
-        }
-        
-        // Now start Expo with tunnel to get the QR code
+        // Start Expo with tunnel to get the QR code
         console.log('🌐 Starting Expo with tunnel...');
         try {
           const expoCommand = 'npx expo start --tunnel --non-interactive';
@@ -73,10 +50,11 @@ module.exports = {
             expoUrl = tunnelMatch[0];
             console.log(`✅ Expo tunnel started: ${expoUrl}`);
           } else {
-            console.log('⚠️  Could not extract tunnel URL, using EAS URL');
+            throw new Error('Could not extract tunnel URL from Expo output');
           }
         } catch (tunnelError) {
-          console.log('⚠️  Expo tunnel failed, using EAS URL');
+          console.log('❌ Expo tunnel failed:', tunnelError.message);
+          throw new Error('Failed to start Expo tunnel');
         }
         
       } else if (mode === 'publish') {
