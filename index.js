@@ -40,6 +40,24 @@ module.exports = {
           console.log('💡 Get your free token from: https://ngrok.com/');
         }
         
+        // Ensure ngrok config exists when token is provided (helps avoid Unauthorized)
+        let ngrokConfigPath = undefined;
+        try {
+          if (process.env.NGROK_AUTHTOKEN) {
+            const homeDir = process.env.HOME || '/opt/buildhome';
+            const configDir = path.join(homeDir, '.config', 'ngrok');
+            ngrokConfigPath = path.join(configDir, 'ngrok.yml');
+            if (!fs.existsSync(configDir)) {
+              fs.mkdirSync(configDir, { recursive: true });
+            }
+            const ngrokConfigContent = `version: 3\nauthtoken: ${process.env.NGROK_AUTHTOKEN}\n`;
+            fs.writeFileSync(ngrokConfigPath, ngrokConfigContent, { encoding: 'utf8' });
+            console.log(`📝 Wrote ngrok config to ${ngrokConfigPath}`);
+          }
+        } catch (cfgErr) {
+          console.log('⚠️  Could not write ngrok config file:', cfgErr.message);
+        }
+        
         try {
           const expoCommand = 'npx expo start --tunnel';
           console.log(`🔧 Executing: ${expoCommand}`);
@@ -52,7 +70,8 @@ module.exports = {
               EXPO_TOKEN: process.env.EXPO_TOKEN, 
               CI: '1',
               NGROK_AUTHTOKEN: process.env.NGROK_AUTHTOKEN || '',
-              NGROK_CONFIG_PATH: '/tmp/ngrok.yml'
+              // Point ngrok to the config file we just wrote (if any)
+              ...(ngrokConfigPath ? { NGROK_CONFIG: ngrokConfigPath } : {})
             },
             timeout: 60000 // Increased timeout to 60 seconds
           });
