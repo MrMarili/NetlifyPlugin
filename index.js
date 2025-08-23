@@ -34,8 +34,10 @@ module.exports = {
         // Start Expo with tunnel to get the QR code
         console.log('🌐 Starting Expo with tunnel...');
         
+        // Resolve Ngrok token from either env name
+        const resolvedNgrokToken = process.env.NGROK_AUTHTOKEN || process.env.NGROK_AUTH_TOKEN || '';
         // Check if we have Ngrok token
-        if (!process.env.NGROK_AUTHTOKEN) {
+        if (!resolvedNgrokToken) {
           console.log('⚠️  Warning: NGROK_AUTHTOKEN not set. Tunnel may fail.');
           console.log('💡 Get your free token from: https://ngrok.com/');
         }
@@ -43,14 +45,14 @@ module.exports = {
         // Ensure ngrok config exists when token is provided (helps avoid Unauthorized)
         let ngrokConfigPath = undefined;
         try {
-          if (process.env.NGROK_AUTHTOKEN) {
+          if (resolvedNgrokToken) {
             const homeDir = process.env.HOME || '/opt/buildhome';
             const configDir = path.join(homeDir, '.config', 'ngrok');
             ngrokConfigPath = path.join(configDir, 'ngrok.yml');
             if (!fs.existsSync(configDir)) {
               fs.mkdirSync(configDir, { recursive: true });
             }
-            const ngrokConfigContent = `version: 3\nauthtoken: ${process.env.NGROK_AUTHTOKEN}\n`;
+            const ngrokConfigContent = `version: 3\nauthtoken: ${resolvedNgrokToken}\n`;
             fs.writeFileSync(ngrokConfigPath, ngrokConfigContent, { encoding: 'utf8' });
             console.log(`📝 Wrote ngrok config to ${ngrokConfigPath}`);
           }
@@ -69,7 +71,8 @@ module.exports = {
               ...process.env, 
               EXPO_TOKEN: process.env.EXPO_TOKEN, 
               CI: '1',
-              NGROK_AUTHTOKEN: process.env.NGROK_AUTHTOKEN || '',
+              NGROK_AUTHTOKEN: resolvedNgrokToken,
+              NGROK_AUTH_TOKEN: resolvedNgrokToken,
               // Point ngrok to the config file we just wrote (if any)
               ...(ngrokConfigPath ? { NGROK_CONFIG: ngrokConfigPath } : {})
             },
