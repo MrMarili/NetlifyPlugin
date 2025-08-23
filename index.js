@@ -33,6 +33,13 @@ module.exports = {
         
         // Start Expo with tunnel to get the QR code
         console.log('🌐 Starting Expo with tunnel...');
+        
+        // Check if we have Ngrok token
+        if (!process.env.NGROK_AUTHTOKEN) {
+          console.log('⚠️  Warning: NGROK_AUTHTOKEN not set. Tunnel may fail.');
+          console.log('💡 Get your free token from: https://ngrok.com/');
+        }
+        
         try {
           const expoCommand = 'npx expo start --tunnel';
           console.log(`🔧 Executing: ${expoCommand}`);
@@ -44,9 +51,10 @@ module.exports = {
               ...process.env, 
               EXPO_TOKEN: process.env.EXPO_TOKEN, 
               CI: '1',
-              NGROK_AUTHTOKEN: process.env.NGROK_AUTHTOKEN || ''
+              NGROK_AUTHTOKEN: process.env.NGROK_AUTHTOKEN || '',
+              NGROK_CONFIG_PATH: '/tmp/ngrok.yml'
             },
-            timeout: 30000 // 30 seconds timeout
+            timeout: 60000 // Increased timeout to 60 seconds
           });
           
           // Extract tunnel URL from output
@@ -59,7 +67,7 @@ module.exports = {
           }
         } catch (tunnelError) {
           console.log('❌ Expo tunnel failed:', tunnelError.message);
-          throw new Error('Failed to start Expo tunnel');
+          throw new Error('Failed to start Expo tunnel. Please check NGROK_AUTHTOKEN environment variable.');
         }
         
       } else if (mode === 'publish') {
