@@ -35,7 +35,7 @@ module.exports = {
         console.log('🌐 Starting Expo with tunnel...');
         
         // Resolve Ngrok token from either env name
-        const resolvedNgrokToken = process.env.NGROK_AUTHTOKEN || process.env.NGROK_AUTH_TOKEN || '';
+        const resolvedNgrokToken = process.env.NGROK_AUTHTOKEN || process.env.NGROK_AUTH_TOKEN || process.env.NGROK_TOKEN || process.env.NGROK_API_KEY || '';
         // Check if we have Ngrok token
         if (!resolvedNgrokToken) {
           console.log('⚠️  Warning: NGROK_AUTHTOKEN not set. Tunnel may fail.');
@@ -47,14 +47,29 @@ module.exports = {
         try {
           if (resolvedNgrokToken) {
             const homeDir = process.env.HOME || '/opt/buildhome';
-            const configDir = path.join(homeDir, '.config', 'ngrok');
-            ngrokConfigPath = path.join(configDir, 'ngrok.yml');
-            if (!fs.existsSync(configDir)) {
-              fs.mkdirSync(configDir, { recursive: true });
+            // v3 path
+            const configDirV3 = path.join(homeDir, '.config', 'ngrok');
+            const configPathV3 = path.join(configDirV3, 'ngrok.yml');
+            if (!fs.existsSync(configDirV3)) fs.mkdirSync(configDirV3, { recursive: true });
+            const ngrokConfigContentV3 = `version: 3\nauthtoken: ${resolvedNgrokToken}\n`;
+            fs.writeFileSync(configPathV3, ngrokConfigContentV3, { encoding: 'utf8' });
+            console.log(`📝 Wrote ngrok v3 config to ${configPathV3}`);
+            // v2 path (some wrappers still read this)
+            const configDirV2 = path.join(homeDir, '.ngrok2');
+            const configPathV2 = path.join(configDirV2, 'ngrok.yml');
+            if (!fs.existsSync(configDirV2)) fs.mkdirSync(configDirV2, { recursive: true });
+            const ngrokConfigContentV2 = `authtoken: ${resolvedNgrokToken}\n`;
+            fs.writeFileSync(configPathV2, ngrokConfigContentV2, { encoding: 'utf8' });
+            console.log(`📝 Wrote ngrok v2 config to ${configPathV2}`);
+            ngrokConfigPath = configPathV3;
+            // Also ask ngrok CLI to add the token to its config (best-effort)
+            try {
+              const addAuthCmd = `npx -y ngrok config add-authtoken ${resolvedNgrokToken}`;
+              execSync(addAuthCmd, { stdio: 'pipe', env: { ...process.env, HOME: homeDir } });
+              console.log('✅ ngrok config add-authtoken executed');
+            } catch (authErr) {
+              console.log('⚠️  ngrok add-authtoken failed (continuing):', authErr.message);
             }
-            const ngrokConfigContent = `version: 3\nauthtoken: ${resolvedNgrokToken}\n`;
-            fs.writeFileSync(ngrokConfigPath, ngrokConfigContent, { encoding: 'utf8' });
-            console.log(`📝 Wrote ngrok config to ${ngrokConfigPath}`);
           }
         } catch (cfgErr) {
           console.log('⚠️  Could not write ngrok config file:', cfgErr.message);
@@ -73,10 +88,12 @@ module.exports = {
               CI: '1',
               NGROK_AUTHTOKEN: resolvedNgrokToken,
               NGROK_AUTH_TOKEN: resolvedNgrokToken,
+              NGROK_TOKEN: resolvedNgrokToken,
+              NGROK_API_KEY: resolvedNgrokToken,
               // Point ngrok to the config file we just wrote (if any)
               ...(ngrokConfigPath ? { NGROK_CONFIG: ngrokConfigPath } : {})
             },
-            timeout: 60000 // Increased timeout to 60 seconds
+            timeout: 120000 // Increased timeout to 120 seconds
           });
           
           // Extract tunnel URL from output
