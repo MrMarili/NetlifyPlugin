@@ -1,6 +1,6 @@
 {
   "name": "netlify-plugin-expo-qr",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "Netlify Build Plugin to automate Expo app updates and generate QR code pages for Expo Go",
   "main": "index.js",
   "scripts": {
