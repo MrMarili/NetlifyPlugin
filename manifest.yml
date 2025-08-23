@@ -4,3 +4,6 @@ inputs:
     description: "Expo update mode - 'eas' (default) or 'publish' (legacy)"
     default: "eas"
     required: false
+  - name: ngrok_token
+    description: "Ngrok authentication token for tunnel support"
+    required: false

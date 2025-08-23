@@ -40,7 +40,12 @@ module.exports = {
           const expoOutput = execSync(expoCommand, { 
             encoding: 'utf8',
             stdio: 'pipe',
-            env: { ...process.env, EXPO_TOKEN: process.env.EXPO_TOKEN, CI: '1' },
+            env: { 
+              ...process.env, 
+              EXPO_TOKEN: process.env.EXPO_TOKEN, 
+              CI: '1',
+              NGROK_AUTHTOKEN: process.env.NGROK_AUTHTOKEN || ''
+            },
             timeout: 30000 // 30 seconds timeout
           });
           
