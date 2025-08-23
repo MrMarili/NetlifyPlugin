@@ -11,8 +11,9 @@ module.exports = {
     console.log(`🚀 Starting netlify-plugin-expo-qr in ${mode} mode...`);
     
     // Check required environment variables
-    if (!process.env.EXPO_TOKEN) {
-      utils.build.failBuild('❌ EXPO_TOKEN environment variable is required');
+    const externalUrlInput = (inputs && inputs.external_url) || process.env.EXTERNAL_TUNNEL_URL;
+    if (!process.env.EXPO_TOKEN && !externalUrlInput) {
+      utils.build.failBuild('❌ EXPO_TOKEN environment variable is required (unless EXTERNAL_TUNNEL_URL or inputs.external_url is provided)');
       return;
     }
     
@@ -21,6 +22,12 @@ module.exports = {
       let branchName = 'unknown';
       
       if (mode === 'eas') {
+        const externalUrl = externalUrlInput;
+        if (externalUrl) {
+          console.log('🔗 Using external tunnel URL (provided via inputs or env). Skipping expo start.');
+          expoUrl = externalUrl;
+          branchName = process.env.EAS_UPDATE_BRANCH || 'external';
+        } else {
         console.log('📱 Starting Expo with tunnel...');
         
         // Set EXPO_TOKEN for EAS authentication
@@ -40,6 +47,7 @@ module.exports = {
         if (!resolvedNgrokToken) {
           console.log('⚠️  Warning: NGROK_AUTHTOKEN not set. Tunnel may fail.');
           console.log('💡 Get your free token from: https://ngrok.com/');
+        }
         }
         
         // Ensure ngrok config exists when token is provided (helps avoid Unauthorized)

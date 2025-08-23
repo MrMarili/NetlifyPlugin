@@ -7,3 +7,6 @@ inputs:
   - name: ngrok_token
     description: "Ngrok authentication token for tunnel support"
     required: false
+  - name: external_url
+    description: "External tunnel URL to use instead of starting Expo (overrides tunnel)"
+    required: false
