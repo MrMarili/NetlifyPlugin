@@ -54,6 +54,31 @@ module.exports = {
           throw new Error('Could not extract Expo URL from EAS update result');
         }
         
+        // Now start Expo with tunnel to get the QR code
+        console.log('🌐 Starting Expo with tunnel...');
+        try {
+          const expoCommand = 'npx expo start --tunnel --non-interactive';
+          console.log(`🔧 Executing: ${expoCommand}`);
+          
+          const expoOutput = execSync(expoCommand, { 
+            encoding: 'utf8',
+            stdio: 'pipe',
+            env: { ...process.env, EXPO_TOKEN: process.env.EXPO_TOKEN },
+            timeout: 30000 // 30 seconds timeout
+          });
+          
+          // Extract tunnel URL from output
+          const tunnelMatch = expoOutput.match(/exp:\/\/u-[^\s]+/);
+          if (tunnelMatch) {
+            expoUrl = tunnelMatch[0];
+            console.log(`✅ Expo tunnel started: ${expoUrl}`);
+          } else {
+            console.log('⚠️  Could not extract tunnel URL, using EAS URL');
+          }
+        } catch (tunnelError) {
+          console.log('⚠️  Expo tunnel failed, using EAS URL');
+        }
+        
       } else if (mode === 'publish') {
         console.log('📱 Running Expo publish (legacy mode)...');
         
