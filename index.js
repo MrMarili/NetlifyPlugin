@@ -34,13 +34,13 @@ module.exports = {
         // Start Expo with tunnel to get the QR code
         console.log('🌐 Starting Expo with tunnel...');
         try {
-          const expoCommand = 'npx expo start --tunnel --non-interactive';
+          const expoCommand = 'npx expo start --tunnel';
           console.log(`🔧 Executing: ${expoCommand}`);
           
           const expoOutput = execSync(expoCommand, { 
             encoding: 'utf8',
             stdio: 'pipe',
-            env: { ...process.env, EXPO_TOKEN: process.env.EXPO_TOKEN },
+            env: { ...process.env, EXPO_TOKEN: process.env.EXPO_TOKEN, CI: '1' },
             timeout: 30000 // 30 seconds timeout
           });
           
